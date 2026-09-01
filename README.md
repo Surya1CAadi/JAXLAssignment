@@ -1,54 +1,118 @@
-JAXL Frontend Assignment
-Shipment Tracking Timeline
+📦 JAXL — Shipment Tracking Timeline
+A unified shipment tracking experience built from inconsistent provider data.
 
-A responsive shipment tracking interface built with React, Tailwind CSS, and Lucide React.
 
-The application normalizes tracking information from three different shipping providers into a single internal data format and renders all providers using the same reusable shipment timeline component.
 
-🚀 Live Demo
 
-Add your deployed application URL here.
 
-Live Demo: https://your-deployed-app-url.com
 
-📌 Overview
 
-JAXL integrates with multiple shipping and logistics providers, where each provider returns shipment tracking information in a different format.
 
-This project solves that problem by:
+✨ Overview
 
-Supporting all three sample providers.
-Converting provider-specific data into a common internal format.
-Sorting shipment events chronologically.
-Removing duplicate events.
-Formatting different timestamp formats into a readable date and time.
-Handling unknown shipment statuses gracefully.
-Handling missing event descriptions safely.
-Rendering all normalized data through one shared timeline component.
-Providing a responsive and visually consistent UI.
-✨ Features
-Shipment Providers
+JAXL Shipment Tracking Timeline is a responsive React application that transforms tracking data from multiple logistics providers into one clean, consistent customer experience.
 
-The application supports:
+Each shipping provider returns data differently — with different field names, timestamp formats, status values, and levels of information.
 
-Shopify
-Shiprocket
-NimbusPost
+Instead of creating separate UI implementations for each provider, this project uses a common normalization layer and a single reusable timeline component.
 
-Users can switch between providers through the UI and view the corresponding shipment history.
+┌───────────────────┐
+│   Shopify Data    │
+└─────────┬─────────┘
+          │
+┌───────────────────┐
+│ Shiprocket Data   │
+└─────────┬─────────┘
+          │
+┌───────────────────┐
+│ NimbusPost Data   │
+└─────────┬─────────┘
+          │
+          ▼
+   ┌──────────────┐
+   │ Normalizer   │
+   └──────┬───────┘
+          │
+          ▼
+   ┌──────────────┐
+   │ Common Event │
+   │    Model     │
+   └──────┬───────┘
+          │
+          ▼
+   ┌──────────────┐
+   │   Timeline   │
+   │  Component   │
+   └──────────────┘
 
-Data Normalization
+🚀 Live Preview
 
-Each provider has a different API structure:
+🌐 Live Demo:
+https://your-deployed-app-url.com
 
-Provider	Status Field	Timestamp Format	Description
-Shopify	status	ISO 8601	message
-Shiprocket	current_status	DD-MM-YYYY HH:mm:ss	Not provided
-NimbusPost	event_status	Unix timestamp	Not provided
+📁 GitHub Repository:
+https://github.com/YOUR_USERNAME/YOUR_REPOSITORY
 
-Provider-specific data is converted into a common format before being passed to the timeline.
+Replace the URLs above with your actual deployment and repository links.
 
-Example internal structure:
+🎯 What This Project Demonstrates
+
+This assignment focuses on both functional correctness and UI/UX quality.
+
+⚙️ Functional Engineering
+🔄 Multiple provider formats normalized into one model
+📅 Chronological event sorting
+🧹 Duplicate event removal
+🕐 Multiple timestamp formats handled
+🛡️ Unknown statuses handled gracefully
+📝 Missing descriptions handled safely
+🧩 One shared timeline component for all providers
+🎨 UI / UX
+Clear visual hierarchy
+Status-specific icons and colors
+Consistent spacing and alignment
+Responsive desktop/mobile layout
+Clean provider switching experience
+Readable timestamps and descriptions
+Loading and empty states
+🚚 Supported Providers
+🛍️ Shopify
+
+Uses ISO 8601 timestamps and provides event messages.
+
+{
+  "status": "delivered",
+  "timestamp": "2026-07-22T14:32:00Z",
+  "message": "Package delivered"
+}
+
+🚀 Shiprocket
+
+Uses different field names and DD-MM-YYYY HH:mm:ss timestamps.
+
+{
+  "current_status": "DELIVERED",
+  "status_date": "21-07-2026 16:05:00"
+}
+
+
+The dataset also contains a duplicate event to demonstrate deduplication.
+
+📦 NimbusPost
+
+Uses Unix timestamps in seconds and introduces a provider-specific status.
+
+{
+  "event_status": "RTO_INITIATED",
+  "event_time": 1721520000
+}
+
+
+RTO_INITIATED represents Return to Origin Initiated — the shipment is being returned to the sender after an unsuccessful delivery attempt.
+
+🧠 Normalized Data Model
+
+Regardless of the provider, the UI receives a consistent event structure:
 
 {
   status: "in_transit",
@@ -56,169 +120,179 @@ Example internal structure:
   description: "Package is in transit"
 }
 
-🧩 Architecture
 
-The application follows a simple normalization-based architecture:
+This separation between data transformation and presentation keeps the timeline component simple and reusable.
 
-Provider JSON
-     ↓
-Provider-specific normalizer
-     ↓
-Common shipment event format
-     ↓
-Sort & remove duplicates
-     ↓
-Shared Timeline Component
-     ↓
-User Interface
+Provider → Common Model
+Shopify
+  status
+  timestamp
+  message
+       │
+       ▼
+┌──────────────────────┐
+│ status               │
+│ timestamp            │
+│ description          │
+└──────────────────────┘
+       ▲
+       │
+Shiprocket
+  current_status
+  status_date
+
+       ▲
+       │
+NimbusPost
+  event_status
+  event_time
+
+🧹 Data Processing
+
+The application performs several transformations before displaying events.
+
+1. Sort Events
+
+Events are always displayed:
+
+Oldest → Newest
+
+This works even when the provider returns events in an inconsistent order.
+
+2. Remove Duplicates
+
+Two events are considered duplicates when they have the same:
+
+status + timestamp
 
 
-This allows all three providers to use the same timeline implementation instead of maintaining separate UI components for each provider.
+For example, the duplicate Shiprocket IN_TRANSIT event is shown only once.
 
+3. Normalize Timestamps
+
+Different provider formats are converted into a consistent date representation before being displayed.
+
+Supported formats include:
+
+ISO 8601
+2026-07-22T14:32:00Z
+
+DD-MM-YYYY HH:mm:ss
+21-07-2026 16:05:00
+
+Unix timestamp
+1721520000
+
+4. Handle Unknown Statuses
+
+Unexpected statuses don't break the UI.
+
+Instead, they fall back to a generic visual treatment.
+
+For example:
+
+❔ RTO_INITIATED
+
+
+This allows new provider statuses to be displayed without requiring the timeline component to be rewritten.
+
+5. Handle Missing Descriptions
+
+Missing messages are handled gracefully without displaying:
+
+undefined
+null
+
+
+or creating broken/empty-looking layouts.
+
+🎨 UI Design
+
+The interface uses a card-based layout with a vertical shipment timeline.
+
+Visual Language
+Element	Purpose
+🎨 Color	Quickly communicates status
+📦 Icons	Makes shipment states recognizable
+🕐 Timestamp	Shows when the event occurred
+📝 Description	Provides additional context
+📍 Timeline	Communicates shipment progression
+
+Status indicators use Lucide React icons to make the tracking history easier to scan.
+
+📱 Responsive Experience
+
+The interface is designed to work across different screen sizes.
+
+Desktop
+┌──────────────────────────────────────┐
+│          Shipment Tracking           │
+│                                      │
+│   ● Delivered                        │
+│   │  Jul 22, 2026 • 2:32 PM          │
+│   │  Package delivered               │
+│   │                                  │
+│   ● Out for Delivery                 │
+│   │  Jul 22, 2026 • 8:10 AM          │
+│   │                                  │
+│   ● In Transit                       │
+└──────────────────────────────────────┘
+
+
+Mobile
+┌────────────────────┐
+│ Shipment Tracking  │
+│                    │
+│ ● Delivered        │
+│ │ Jul 22 • 2:32 PM │
+│ │                  │
+│ ● Out for Delivery │
+│ │ Jul 22 • 8:10 AM │
+│ │                  │
+│ ● In Transit       │
+└────────────────────┘
+
+🛠️ Tech Stack
+Technology	Purpose
+⚛️ React	UI development
+🎨 Tailwind CSS	Styling & responsive design
+✨ Lucide React	Shipment/status icons
+⚡ Vite	Development & build tooling
+📄 JSON	Sample provider data
+🔧 Git	Version control
 📂 Project Structure
 JAXLAssignment/
-├── public/
-├── src/
-│   ├── components/
+│
+├── 📁 public/
+│
+├── 📁 src/
+│   ├── 📁 components/
 │   │   └── ShipmentTimeline/
-│   ├── data/
+│   │
+│   ├── 📁 data/
 │   │   ├── sample-shopify.json
 │   │   ├── sample-shiprocket.json
 │   │   └── sample-nimbuspost.json
-│   ├── utils/
+│   │
+│   ├── 📁 utils/
 │   │   └── normalization/
+│   │
 │   ├── App.jsx
 │   ├── main.jsx
 │   └── index.css
+│
 ├── .gitignore
 ├── package.json
 ├── tailwind.config.js
 └── README.md
 
 
-The exact folder structure may vary depending on the implementation.
+The exact structure may vary slightly depending on the implementation.
 
-🔄 Data Normalization
-
-The three providers return different field names and timestamp formats.
-
-Shopify
-{
-  "status": "delivered",
-  "timestamp": "2026-07-22T14:32:00Z",
-  "message": "Package delivered"
-}
-
-Shiprocket
-{
-  "current_status": "DELIVERED",
-  "status_date": "21-07-2026 16:05:00"
-}
-
-NimbusPost
-{
-  "event_status": "RTO_INITIATED",
-  "event_time": 1721520000
-}
-
-
-The application transforms these into a consistent structure before rendering:
-
-{
-  status,
-  timestamp,
-  description
-}
-
-
-This keeps the UI independent of the provider's original API format.
-
-🧹 Data Handling
-
-The application handles the following cases:
-
-Chronological Ordering
-
-Events are sorted from oldest → newest, regardless of their order in the original provider response.
-
-Duplicate Events
-
-Duplicate events are removed when they have the same:
-
-status + timestamp
-
-
-For example, the duplicate Shiprocket IN_TRANSIT event is displayed only once.
-
-Missing Descriptions
-
-Events without a description are rendered cleanly without displaying values such as:
-
-undefined
-null
-
-Unknown Statuses
-
-Unexpected statuses are handled gracefully using a generic status style and icon rather than causing the application to crash.
-
-For example:
-
-RTO_INITIATED
-
-
-is supported even though it is not present in the other provider datasets.
-
-🎨 UI & UX
-
-The interface was designed with a focus on:
-
-Clear visual hierarchy
-Consistent spacing
-Readable typography
-Status-specific colors
-Icons for shipment states
-Clear timeline progression
-Responsive desktop and mobile layouts
-Clean empty/loading states
-Easy provider switching
-Status Visualization
-
-Shipment statuses are visually differentiated using Lucide React icons, colors, and status indicators.
-
-Examples include:
-
-Package
-Package Check
-Truck
-Map Pin
-Check Circle
-Return/Refresh
-Help Circle for unknown statuses
-📱 Responsive Design
-
-The application is built using Tailwind CSS and is designed to work across:
-
-Desktop
-Tablet
-Mobile
-
-The timeline layout adapts to smaller screen sizes while maintaining readable status, timestamp, and description information.
-
-🛠️ Tech Stack
-Frontend
-React
-JavaScript
-Tailwind CSS
-Lucide React
-Vite
-Development
-Git
-GitHub
-npm
-⚙️ Getting Started
+▶️ Getting Started
 Prerequisites
 
-Make sure you have installed:
+Make sure you have:
 
 Node.js
 npm
@@ -230,7 +304,7 @@ Clone the repository:
 git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
 
 
-Navigate into the project:
+Navigate to the project:
 
 cd JAXLAssignment
 
@@ -245,11 +319,9 @@ Start the development server:
 npm run dev
 
 
-The application will be available at the local URL shown in your terminal, typically:
+Open the local development URL shown in your terminal.
 
-http://localhost:5173
-
-📦 Build for Production
+📦 Production Build
 
 Create a production build:
 
@@ -260,53 +332,78 @@ Preview the production build:
 
 npm run preview
 
-🧪 Sample Data
-
-The project includes three sample tracking datasets:
-
-sample-shopify.json
-sample-shiprocket.json
-sample-nimbuspost.json
-
-
-These datasets intentionally demonstrate different real-world data challenges, including:
-
-Different property names
-Different timestamp formats
-Events in different orders
-Duplicate events
-Missing descriptions
-Provider-specific statuses
-📋 Assignment Requirements Covered
-Requirement	Status
-Support Shopify	✅
-Support Shiprocket	✅
-Support NimbusPost	✅
-Single shared timeline	✅
-Normalize provider data	✅
-Chronological ordering	✅
+📊 Requirement Checklist
+Requirement	Implementation
+Shopify provider	✅
+Shiprocket provider	✅
+NimbusPost provider	✅
+Common data model	✅
+Shared timeline component	✅
+Chronological sorting	✅
 Duplicate removal	✅
-Readable timestamps	✅
+Timestamp normalization	✅
 Unknown status handling	✅
 Missing description handling	✅
-Responsive UI	✅
-Visual status indicators	✅
-Loading/empty state	✅
+Responsive layout	✅
+Status visualization	✅
+Loading / empty state	✅
 📸 Screenshots
 
-Add screenshots of your application here.
+Add screenshots of your finished application here.
 
-Example:
+Desktop
+📷 Add desktop screenshot here
 
-screenshots/
-├── desktop.png
-├── mobile.png
-└── provider-switching.png
+Mobile
+📱 Add mobile screenshot here
 
+Provider Switching
+🔄 Add provider switching screenshot here
+
+💡 Key Design Decision
+
+The most important architectural decision in this project is separating provider-specific data handling from the UI.
+
+Instead of:
+
+Shopify → Shopify Timeline
+Shiprocket → Shiprocket Timeline
+NimbusPost → NimbusPost Timeline
+
+
+the application follows:
+
+Shopify ────────┐
+Shiprocket ─────┼──→ Normalized Events → Shared Timeline
+NimbusPost ─────┘
+
+
+This makes the application easier to maintain and allows additional shipping providers to be added without creating another timeline UI.
+
+🔮 Possible Improvements
+
+If this were extended beyond the assignment, some potential improvements would be:
+
+Add real API integrations
+Add unit tests for normalization functions
+Add automated integration tests
+Add loading skeleton animations
+Add dark mode
+Add subtle provider-switch transitions
+Add shipment search
+Add estimated delivery date
+Add error handling for failed provider requests
 👨‍💻 Author
-
 Your Name
 
-Frontend Assignment — JAXL
+Frontend Developer
 
-GitHub: https://github.com/YOUR_USERNAME
+Built as part of the JAXL Frontend Assignment.
+
+<div align="center">
+📦 Built with React · Tailwind CSS · Lucide React
+
+Shipment data may be inconsistent.
+The customer experience shouldn't be.
+
+</div>
